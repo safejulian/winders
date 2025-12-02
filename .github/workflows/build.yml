@@ -9,6 +9,9 @@ permissions:
     contents: read
     packages: write
 
+env:
+  CONTAINER_IMAGE: ${{ github.repository_owner }}/winders:latest
+
 jobs:
   build:
     runs-on: windows-latest
@@ -20,12 +23,18 @@ jobs:
 
       - name: Build windows image
         run: |
-            docker build . -t ${{ github.repository_owner_id }}/winders:latest
+          docker build . -t ${{ env.CONTAINER_IMAGE }}
+          docker image ls
+          docker run ${{ env.CONTAINER_IMAGE }}
+          echo ${{ env.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+          docker push ghcr.io/${{ env.CONTAINER_IMAGE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: ${{ github.repository_owner_id }}/winders:latest
+          image-ref: ${{ env.CONTAINER_IMAGE }}
           format: 'table'
           exit-code: 0
           ignore-unfixed: true

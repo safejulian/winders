@@ -1,0 +1,32 @@
+name: build.yml
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+    contents: read
+    packages: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Build windows image
+        run: |
+            docker build . -t ${{ github.repository_owner_id }}/winders:latest
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ github.repository_owner_id }}/winders:latest
+          format: 'table'
+          exit-code: 0
+          ignore-unfixed: true
+          vuln-type: 'os,library'

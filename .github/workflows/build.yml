@@ -10,7 +10,7 @@ permissions:
     packages: write
 
 env:
-  CONTAINER_IMAGE: ${{ github.repository_owner }}/winders:latest
+  CONTAINER_IMAGE: ghcr.io/${{ github.repository_owner }}/winders:latest
 
 jobs:
   build:
@@ -25,9 +25,9 @@ jobs:
         run: |
           docker build . -t ${{ env.CONTAINER_IMAGE }}
           docker image ls
-          docker run ${{ env.CONTAINER_IMAGE }}
+          docker run ${{ env.CONTAINER_IMAGE }} "cd / ;Get-ChildItem -Filter *.txt -Recurse"
           echo ${{ env.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-          docker push ghcr.io/${{ env.CONTAINER_IMAGE }}
+          docker push ${{ env.CONTAINER_IMAGE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
